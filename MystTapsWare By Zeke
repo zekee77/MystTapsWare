@@ -92,7 +92,7 @@ Tool.Activated:Connect(function()
             end
         elseif not Locking and getgenv().notification then
             game.StarterGui:SetCore("SendNotification", {
-                Title = "MystTaps Locked ",
+                Title = "MystTaps Unlocked ",
                 Text = "Unlocked",
                 Icon = "http://www.roblox.com/asset/?id=8850953349",
                 Duration = 5
