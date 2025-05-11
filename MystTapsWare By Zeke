@@ -10,7 +10,7 @@ getgenv().AutoPrediction = false
 -- Tool Setup
 local Tool = Instance.new("Tool")
 Tool.RequiresHandle = false
-Tool.Name = "MystTapsWare | Affinity"
+Tool.Name = "MystTapsWare"
 Tool.Parent = game.Players.LocalPlayer.Backpack
 
 local player = game.Players.LocalPlayer
@@ -85,7 +85,7 @@ Tool.Activated:Connect(function()
             Plr = getClosestPlayerToCursor()
             if getgenv().notification then
                 game.StarterGui:SetCore("SendNotification", {
-                    Title = "tyrone",
+                    Title = "MadebyZeke",
                     Text = "Target: " .. tostring(Plr.Character.Humanoid.DisplayName),
                     Icon = "http://www.roblox.com/asset/?id=8850953349"
                 })
