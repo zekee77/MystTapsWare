@@ -1,0 +1,186 @@
+-- CONFIG
+getgenv().Target = true
+getgenv().Prediction = 0.1375 -- Best static value
+getgenv().notification = true
+getgenv().showdot = true
+getgenv().airshotfunc = false
+getgenv().part = "HumanoidRootPart"
+getgenv().AutoPrediction = false
+
+-- Tool Setup
+local Tool = Instance.new("Tool")
+Tool.RequiresHandle = false
+Tool.Name = "MystTapsWare | Affinity"
+Tool.Parent = game.Players.LocalPlayer.Backpack
+
+local player = game.Players.LocalPlayer
+
+local function connectCharacterAdded()
+    player.CharacterAdded:Connect(onCharacterAdded)
+end
+connectCharacterAdded()
+
+player.CharacterRemoving:Connect(function()
+    Tool.Parent = game.Players.LocalPlayer.Backpack
+end)
+
+-- Shape Types
+_G.Types = {
+    Ball = Enum.PartType.Ball,
+    Block = Enum.PartType.Block,
+    Cylinder = Enum.PartType.Cylinder
+}
+
+-- Tracer Part
+local Tracer = Instance.new("Part", game.Workspace)
+Tracer.Name = "locked"
+Tracer.Anchored = true
+Tracer.CanCollide = false
+Tracer.Transparency = 0.8
+Tracer.Shape = _G.Types.Block
+Tracer.Size = Vector3.new(14,14,14)
+Tracer.Color = Color3.fromRGB(0,0,255)
+
+-- UI Circle
+local plr = game.Players.LocalPlayer
+local mouse = plr:GetMouse()
+local Runserv = game:GetService("RunService")
+
+circle = Drawing.new("Circle")
+circle.Color = Color3.fromRGB(255,255,255)
+circle.Thickness = 0
+circle.NumSides = 732
+circle.Radius = 120
+circle.Transparency = 0.7
+circle.Visible = false
+circle.Filled = false
+
+Runserv.RenderStepped:Connect(function()
+    circle.Position = Vector2.new(mouse.X, mouse.Y + 35)
+end)
+
+-- State Vars
+local guimain = Instance.new("Folder", game.CoreGui)
+local CC = workspace.CurrentCamera
+local LocalMouse = game.Players.LocalPlayer:GetMouse()
+local Locking = false
+
+-- Load Notification
+if getgenv().valiansh == true then
+    game.StarterGui:SetCore("SendNotification", {
+        Title = "zekeDontSkid",
+        Text = "Already Loaded By zeke!",
+        Duration = 5
+    })
+    return
+end
+getgenv().valiansh = true
+
+-- Toggle Lock
+Tool.Activated:Connect(function()
+    if getgenv().Target == true then
+        Locking = not Locking
+
+        if Locking then
+            Plr = getClosestPlayerToCursor()
+            if getgenv().notification then
+                game.StarterGui:SetCore("SendNotification", {
+                    Title = "tyrone",
+                    Text = "Target: " .. tostring(Plr.Character.Humanoid.DisplayName),
+                    Icon = "http://www.roblox.com/asset/?id=8850953349"
+                })
+            end
+        elseif not Locking and getgenv().notification then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "MystTaps Locked ",
+                Text = "Unlocked",
+                Icon = "http://www.roblox.com/asset/?id=8850953349",
+                Duration = 5
+            })
+        end
+    else
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "",
+            Text = "Target isn't enabled",
+            Duration = 5
+        })
+    end
+end)
+
+-- Closest Player Logic
+function getClosestPlayerToCursor()
+    local closestPlayer
+    local shortestDistance = circle.Radius
+
+    for i, v in pairs(game.Players:GetPlayers()) do
+        if v ~= game.Players.LocalPlayer and v.Character and v.Character:FindFirstChild("Humanoid") and v.Character.Humanoid.Health ~= 0 and v.Character:FindFirstChild("LowerTorso") then
+            local pos = CC:WorldToViewportPoint(v.Character.PrimaryPart.Position)
+            local magnitude = (Vector2.new(pos.X, pos.Y) - Vector2.new(LocalMouse.X, LocalMouse.Y)).magnitude
+            if magnitude < shortestDistance then
+                closestPlayer = v
+                shortestDistance = magnitude
+            end
+        end
+    end
+    return closestPlayer
+end
+
+-- Tracer Update
+if getgenv().showdot == true then
+    Runserv.Stepped:Connect(function()
+        if Locking and Plr.Character and Plr.Character:FindFirstChild("LowerTorso") then
+            Tracer.CFrame = CFrame.new(Plr.Character.LowerTorso.Position + (Plr.Character.LowerTorso.Velocity * getgenv().Prediction))
+        else
+            Tracer.CFrame = CFrame.new(0, 9999, 0)
+        end
+    end)
+end
+
+-- Mouse Pos Hook
+local rawmetatable = getrawmetatable(game)
+local old = rawmetatable.__namecall
+setreadonly(rawmetatable, false)
+rawmetatable.__namecall = newcclosure(function(...)
+    local args = {...}
+    if Locking and getnamecallmethod() == "FireServer" and args[2] == "UpdateMousePos" then
+        args[3] = Plr.Character[getgenv().part].Position + (Plr.Character[getgenv().part].Velocity * getgenv().Prediction)
+        return old(unpack(args))
+    end
+    return old(...)
+end)
+
+-- Airshot Logic
+if getgenv().airshotfunc == true then
+    if Plr.Character.Humanoid.Jump == true and Plr.Character.Humanoid.FloorMaterial == Enum.Material.Air then
+        getgenv().part = "RightFoot"
+    else
+        Plr.Character:WaitForChild("Humanoid").StateChanged:Connect(function(_, new)
+            if new == Enum.HumanoidStateType.Freefall then
+                getgenv().part = "RightFoot"
+            else
+                getgenv().part = "LowerTorso"
+            end
+        end)
+    end
+end
+
+-- Optimized AutoPrediction
+if getgenv().AutoPrediction == true then
+    task.wait(5)
+    local pingString = game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValueString()
+    local ping = tonumber(string.match(pingString, "%d+"))
+
+    if ping <= 40 then
+        getgenv().Prediction = 0.125
+    elseif ping <= 60 then
+        getgenv().Prediction = 0.129
+    elseif ping <= 80 then
+        getgenv().Prediction = 0.134
+    elseif ping <= 100 then
+        getgenv().Prediction = 0.1375
+    elseif ping <= 130 then
+        getgenv().Prediction = 0.140
+    else
+        getgenv().Prediction = 0.146
+    end
+end
