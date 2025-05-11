@@ -1,6 +1,6 @@
 -- CONFIG
 getgenv().Target = true
-getgenv().Prediction = 0.1356875 -- Best static value
+getgenv().Prediction = 0.1442 -- Best static value
 getgenv().notification = true
 getgenv().showdot = true
 getgenv().airshotfunc = false
